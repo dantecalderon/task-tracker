@@ -18,7 +18,6 @@ interface Task {
   updatedAt: Date; // The date and time when the task was last updated
 }
 
-
 enum Command {
   Add = 'add',
   Update = 'update',
@@ -28,17 +27,11 @@ enum Command {
   List = 'list'
 }
 
-
 function readTasksFromFile(): Task[] {
   try {
     const fileRaw = readFileSync(DB_FILENAME);
-
     return JSON.parse(fileRaw.toString());
-  } catch (error) {
-
-    console.warn('Warn: ', error.message);
-    console.log('Starting a new list...');
-
+  } catch {
     return [];
   }
 }
@@ -47,7 +40,7 @@ function writeTasksFile(tasks: Task[]) {
   try {
     writeFileSync(DB_FILENAME, JSON.stringify(tasks, null, 2));
   } catch (error) {
-    console.error('Error: ', `Error writting tasks to file ${DB_FILENAME}`)
+    console.error(`Error writting tasks to file ${DB_FILENAME}`)
   }
 }
 
@@ -58,7 +51,7 @@ function generateNextId(tasks: Task[]): number {
 }
 
 function addTask(description: string) {
-  if (!description || typeof description !== 'string') {
+  if (!description) {
     throw new Error('Description for task is invalid');
   }
 
@@ -75,6 +68,77 @@ function addTask(description: string) {
   }
 
   writeTasksFile([...tasks, newTask]);
+
+  console.log(`Task added successfully (ID: ${newTask.id})`)
+}
+
+function updateTask(taskIdString: string, description: string) {
+  const taskId: number =  parseInt(taskIdString);
+
+  if(isNaN(taskId) || !description) {
+    throw new Error('Invalid taskId format or description');
+  }
+
+  const tasks = readTasksFromFile();
+
+  const taskToUpdate = tasks.find(task => task.id === taskId);
+
+  if (!taskToUpdate) {
+    throw new Error('Task not found');
+  }
+
+  taskToUpdate.description = description;
+  taskToUpdate.updatedAt = new Date();
+
+  writeTasksFile(tasks);
+
+  console.log(`Task updated successfully (ID: ${taskToUpdate.id})`)
+}
+
+function updateTaskStatus(taskIdString: string, status: TaskStatus) {
+  const taskId: number =  parseInt(taskIdString);
+
+  if(isNaN(taskId) || !status) {
+    throw new Error('Invalid taskId format or status');
+  }
+
+  const tasks = readTasksFromFile();
+
+  const taskToUpdate = tasks.find(task => task.id === taskId);
+
+  if (!taskToUpdate) {
+    throw new Error('Task not found');
+  }
+
+  taskToUpdate.status = status;
+  taskToUpdate.updatedAt = new Date();
+
+  writeTasksFile(tasks);
+
+  console.log(`Task status updated successfully (ID: ${taskToUpdate.id})`)
+}
+
+
+function deleteTask(taskIdString: string) {
+  const taskId: number =  parseInt(taskIdString);
+
+  if(isNaN(taskId)) {
+    throw new Error('Invalid taskId format or description');
+  }
+
+  const tasks = readTasksFromFile();
+
+  const tasksWithoutDeleted = tasks.filter(task => task.id
+    !== taskId);
+
+
+  if (tasks.length === tasksWithoutDeleted.length) {
+    throw new Error('Task not found');
+  }
+
+  writeTasksFile(tasksWithoutDeleted);
+
+  console.log(`Task deleted successfully (ID: ${taskId})`)
 }
 
 function listTasks(status?: TaskStatus) {
@@ -90,16 +154,18 @@ function listTasks(status?: TaskStatus) {
 }
 
 
-const commandsListener: Partial<Record<Command, Function>> = {
+const commandsListener: Record<Command, Function> = {
   add: addTask,
+  update: updateTask,
+  "mark-done": (taskId: string) => updateTaskStatus(taskId, TaskStatus.Done),
+  'mark-in-progress': (taskId: string) => updateTaskStatus(taskId, TaskStatus.InProgress),
+  delete: deleteTask,
   list: listTasks,
 }
 
 function main() {
   try {
     const command = process.argv[2];
-
-    console.log('Command', command)
 
     if (!Object.values(Command).includes(command as Command)) {
       throw new Error(`Command is not valid, use one of the next: ${Object.values(Command).join(', ')}`)
