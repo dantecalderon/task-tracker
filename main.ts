@@ -11,7 +11,7 @@ enum TaskStatus {
 }
 
 interface Task {
-  id: string; // A unique identifier for the task
+  id: number; // A unique identifier for the task
   description: string; // A short description of the task
   status: TaskStatus; // The status of the task (todo, in-progress, done)
   createdAt: Date, // The date and time when the task was created
@@ -45,10 +45,36 @@ function readTasksFromFile(): Task[] {
 
 function writeTasksFile(tasks: Task[]) {
   try {
-    writeFileSync(DB_FILENAME, JSON.stringify(tasks));
+    writeFileSync(DB_FILENAME, JSON.stringify(tasks, null, 2));
   } catch (error) {
     console.error('Error: ', `Error writting tasks to file ${DB_FILENAME}`)
   }
+}
+
+function generateNextId(tasks: Task[]): number {
+  return Math.max(1,
+                  Math.max(...tasks.map(task => task.id)) + 1
+  );
+}
+
+function addTask(description: string) {
+  if (!description || typeof description !== 'string') {
+    throw new Error('Description for task is invalid');
+  }
+
+  const tasks = readTasksFromFile()
+
+  const newTaskId = generateNextId(tasks);
+
+  const newTask: Task = {
+    id: newTaskId,
+    description,
+    status: TaskStatus.Todo,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+
+  writeTasksFile([...tasks, newTask]);
 }
 
 function listTasks(status?: TaskStatus) {
@@ -65,6 +91,7 @@ function listTasks(status?: TaskStatus) {
 
 
 const commandsListener: Partial<Record<Command, Function>> = {
+  add: addTask,
   list: listTasks,
 }
 
