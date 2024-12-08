@@ -1,0 +1,19 @@
+{
+  "name": "trask-tracker",
+  "version": "1.0.0",
+  "description": "Task Tracker Sample solution for the task-tracker challenge from roadmap.sh.",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dante Calderon <@dantehemerson>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.1"
+  },
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  }
+}
