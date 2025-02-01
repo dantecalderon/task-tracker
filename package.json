@@ -5,12 +5,14 @@
   "main": "main.ts",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --experimental-transform-types ./app.test.ts",
+    "test": "node --test --experimental-strip-types --experimental-transform-types ./app.test.ts",
+    "test:cov": "c8 --reporter text --reporter html node --test --experimental-strip-types --experimental-transform-types ./app.test.ts",
     "debug": "node --experimental-strip-types --experimental-transform-types --inspect-brk ./main.ts delete 1"
   },
   "author": "Dante Calderon <@dantehemerson>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.10.1"
+    "@types/node": "^22.10.1",
+    "c8": "^10.1.3"
   }
 }

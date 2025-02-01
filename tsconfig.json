@@ -3,8 +3,9 @@
   "exclude": ["node_modules", "**/*.spec.ts"],
   "compilerOptions": {
     "sourceMap": true,
-    "types": [
-      "node"
-    ]
-  },
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"]
+  }
 }
