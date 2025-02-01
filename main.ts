@@ -2,8 +2,6 @@
 
 import { writeFileSync, readFileSync } from 'node:fs';
 
-const DB_FILENAME = './my_tasks.json';
-
 enum TaskStatus {
   Todo = 'todo',
   InProgress = 'in-progress',
@@ -26,6 +24,8 @@ enum Command {
   MarkDone = 'mark-done',
   List = 'list'
 }
+
+const DB_FILENAME = './my_tasks.json';
 
 function readTasksFromFile(): Task[] {
   try {

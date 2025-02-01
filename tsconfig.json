@@ -1,5 +1,8 @@
 {
+  "files": ["**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
   "compilerOptions": {
+    "sourceMap": true,
     "types": [
       "node"
     ]
