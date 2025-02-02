@@ -1,27 +1,33 @@
 #!/usr/bin/env -S node --experimental-strip-types --experimental-transform-types --no-warnings
 
 import {
-  addTask,
-  deleteTask,
-  listTasks,
-  updateTask,
-  updateTaskStatus,
+  handleAddTask,
+  handleDeleteTask,
+  handleListTasks,
+  handleUpdateTask,
+  handleUpdateTaskStatus,
 } from "./src/task-utils.ts";
 import { Command, TaskStatus } from "./src/task.interface.ts";
 
+// Map command names to handlers
 const commandsListener: Record<Command, Function> = {
-  add: addTask,
-  update: updateTask,
-  "mark-done": (taskId: string) => updateTaskStatus(taskId, TaskStatus.Done),
+  add: handleAddTask,
+  update: handleUpdateTask,
+  "mark-done": (taskId: string) =>
+    handleUpdateTaskStatus(taskId, TaskStatus.Done),
   "mark-in-progress": (taskId: string) =>
-    updateTaskStatus(taskId, TaskStatus.InProgress),
-  delete: deleteTask,
-  list: listTasks,
+    handleUpdateTaskStatus(taskId, TaskStatus.InProgress),
+  delete: handleDeleteTask,
+  list: handleListTasks,
 };
 
 function main() {
   try {
+    // Get the command
     const command = process.argv[2];
+
+    // Get list of command arguments
+    const commandArgs = process.argv.slice(3);
 
     if (!Object.values(Command).includes(command as Command)) {
       throw new Error(
@@ -31,20 +37,19 @@ function main() {
       );
     }
 
-    const listener = commandsListener[command];
+    const commandHandler = commandsListener[command];
 
-    if (!listener) {
-      throw new Error(`Listener action not defined for ${command} command.`);
+    if (!commandHandler) {
+      throw new Error(`Handler action not defined for ${command} command.`);
     }
-
-    const commandArgs = process.argv.slice(3);
 
     console.debug("Executing command: ", {
       command,
       commandArgs,
     });
 
-    listener(...commandArgs);
+    // Execute command handler
+    commandHandler(...commandArgs);
   } catch (error) {
     console.error("Error: ", error.message);
   }

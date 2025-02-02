@@ -24,12 +24,10 @@ function writeTasksFile(tasks: Task[]) {
   }
 }
 
-export function addTask(description: string) {
+export function addTask(tasks: Task[], description: string): Task[] {
   if (!description) {
     throw new Error("Description for task is invalid");
   }
-
-  const tasks = readTasksFromFile();
 
   const newTaskId = generateNextId(tasks);
 
@@ -41,19 +39,29 @@ export function addTask(description: string) {
     updatedAt: new Date(),
   };
 
-  writeTasksFile([...tasks, newTask]);
+  console.log(`Task created successfully (ID: ${newTask.id})`);
 
-  console.log(`Task added successfully (ID: ${newTask.id})`);
+  return [...tasks, newTask];
 }
 
-export function updateTask(taskIdString: string, description: string) {
+export function handleAddTask(description: string) {
+  const tasks = readTasksFromFile();
+
+  const newTasks = addTask(tasks, description);
+
+  writeTasksFile(newTasks);
+}
+
+export function updateTask(
+  tasks: Task[],
+  taskIdString: string,
+  description: string
+): Task[] {
   const taskId: number = parseInt(taskIdString);
 
   if (isNaN(taskId) || !description) {
     throw new Error("Invalid taskId format or description");
   }
-
-  const tasks = readTasksFromFile();
 
   const taskToUpdate = tasks.find((task) => task.id === taskId);
 
@@ -64,19 +72,29 @@ export function updateTask(taskIdString: string, description: string) {
   taskToUpdate.description = description;
   taskToUpdate.updatedAt = new Date();
 
-  writeTasksFile(tasks);
-
   console.log(`Task updated successfully (ID: ${taskToUpdate.id})`);
+
+  return tasks;
 }
 
-export function updateTaskStatus(taskIdString: string, status: TaskStatus) {
+export function handleUpdateTask(taskIdString: string, description: string) {
+  const tasks = readTasksFromFile();
+
+  const newTasks = updateTask(tasks, taskIdString, description);
+
+  writeTasksFile(newTasks);
+}
+
+export function updateTaskStatus(
+  tasks: Task[],
+  taskIdString: string,
+  status: TaskStatus
+): Task[] {
   const taskId: number = parseInt(taskIdString);
 
   if (isNaN(taskId) || !status) {
     throw new Error("Invalid taskId format or status");
   }
-
-  const tasks = readTasksFromFile();
 
   const taskToUpdate = tasks.find((task) => task.id === taskId);
 
@@ -87,19 +105,28 @@ export function updateTaskStatus(taskIdString: string, status: TaskStatus) {
   taskToUpdate.status = status;
   taskToUpdate.updatedAt = new Date();
 
-  writeTasksFile(tasks);
-
   console.log(`Task status updated successfully (ID: ${taskToUpdate.id})`);
+
+  return tasks;
 }
 
-export function deleteTask(taskIdString: string) {
+export function handleUpdateTaskStatus(
+  taskIdString: string,
+  status: TaskStatus
+) {
+  const tasks = readTasksFromFile();
+
+  const newTasks = updateTaskStatus(tasks, taskIdString, status);
+
+  writeTasksFile(newTasks);
+}
+
+export function deleteTask(tasks: Task[], taskIdString: string) {
   const taskId: number = parseInt(taskIdString);
 
   if (isNaN(taskId)) {
-    throw new Error("Invalid taskId format or description");
+    throw new Error("Invalid taskId format");
   }
-
-  const tasks = readTasksFromFile();
 
   const tasksWithoutDeleted = tasks.filter((task) => task.id !== taskId);
 
@@ -107,14 +134,20 @@ export function deleteTask(taskIdString: string) {
     throw new Error("Task not found");
   }
 
-  writeTasksFile(tasksWithoutDeleted);
-
   console.log(`Task deleted successfully (ID: ${taskId})`);
+
+  return tasksWithoutDeleted;
 }
 
-export function listTasks(status?: TaskStatus) {
+export function handleDeleteTask(taskIdString: string) {
   const tasks = readTasksFromFile();
 
+  const newTasks = deleteTask(tasks, taskIdString);
+
+  writeTasksFile(newTasks);
+}
+
+export function filterTasksByStatus(tasks: Task[], status?: TaskStatus) {
   if (status && !Object.values(TaskStatus).includes(status as TaskStatus)) {
     throw new Error(
       `Task status provided is invalid, use one of the next: ${Object.values(
@@ -126,6 +159,14 @@ export function listTasks(status?: TaskStatus) {
   const filteredTasks = status
     ? tasks.filter((task) => task.status === status)
     : tasks;
+
+  return filteredTasks;
+}
+
+export function handleListTasks(status?: TaskStatus) {
+  const tasks = readTasksFromFile();
+
+  const filteredTasks = filterTasksByStatus(tasks, status);
 
   console.table(filteredTasks);
 }
